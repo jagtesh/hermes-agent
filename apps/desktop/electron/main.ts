@@ -101,6 +101,7 @@ import {
   normalizeConnectionInput,
   normalizeRegistry,
   removeConnection,
+  resolvedConnectionId,
   resolveRegistryLocalRoute,
   setPrimaryConnection,
   updateEligibility,
@@ -11744,7 +11745,12 @@ function createWindow() {
   })
 }
 
-ipcMain.handle('hermes:connection', async (_event, profile) => ensureBackend(profile))
+ipcMain.handle('hermes:connection', async (_event, profile) => {
+  const connection = await ensureBackend(profile)
+  const connectionId = resolvedConnectionId(readDesktopConnectionsRegistry(), connection)
+
+  return connectionId ? { ...connection, connectionId } : connection
+})
 // Registry-scoped variant: resolve a backend for (connectionId, profile).
 // connectionId '' / 'local' / the registry primary all behave sensibly; the
 // local kind delegates to ensureBackend when the v1 route is local, and
@@ -11752,8 +11758,11 @@ ipcMain.handle('hermes:connection', async (_event, profile) => ensureBackend(pro
 // registry 'local' entry always means this machine).
 ipcMain.handle('hermes:connection:for', async (_event, payload) => {
   const { connectionId, profile } = payload && typeof payload === 'object' ? (payload as any) : ({} as any)
+  const registry = readDesktopConnectionsRegistry()
+  const id = String(connectionId || '').trim() || registry.primary
+  const connection = await ensureRegistryBackend(id, profile)
 
-  return ensureRegistryBackend(connectionId, profile)
+  return { ...connection, connectionId: id, registryScoped: true }
 })
 // Reconnect-after-wake recovery. A REMOTE primary backend has no child process,
 // so the 'exit'/'error' handlers that would clear a dead connection promise never
@@ -13074,7 +13083,8 @@ async function handleHermesApiRequest(request) {
   // profile's. Resolve the backend through the registry (same pool the job
   // list and WS traffic use) instead of the legacy profile route; a shared
   // remote/cloud host serves every profile via ?profile=, so scope the path.
-  // '' / 'local' fall through to the byte-identical v1 route below (#87882).
+  // An absent/empty id falls through to the byte-identical v1 route below.
+  // Explicit `local` stays registry-pinned so it cannot inherit a v1 remote.
   const registryConnectionId = apiRequestRegistryConnectionId(request)
 
   if (registryConnectionId) {
