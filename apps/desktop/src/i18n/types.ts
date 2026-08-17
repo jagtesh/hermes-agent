@@ -542,6 +542,10 @@ export interface Translations {
       title: string
       intro: string
       stagedNote: string
+      launchModeTitle: string
+      launchModeDesc: string
+      launchPrimary: string
+      launchLastUsed: string
       loadFailed: string
       currentPill: string
       primaryPill: string

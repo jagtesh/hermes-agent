@@ -257,6 +257,7 @@ Alongside the per-profile connection mode above, **Settings → Connections** ma
 
 - **Every connection needs a unique name** (a device name such as "Homelab" or "Work laptop"). When the same profile name exists on several registered sources, surfaces disambiguate it as `@profile-device` (e.g. `@research-homelab`).
 - **Switch sources from the Sessions sidebar.** A named source selector handles any registry size without making gateways look like profiles. The adjacent profile rail then shows the agents on that source and remembers the last profile used there; large profile sets condense independently.
+- **Choose what opens after a restart.** **Open on launch** keeps the backward-compatible **Primary source** default, or can resume the **Last used** source after it connects successfully. This preference is stored outside the application bundle and survives Desktop updates.
 - **Add / edit / remove / test** connections from the panel. The local entry is managed by the app and cannot be removed. **Test** probes the connection's own HTTP and WebSocket legs directly.
 - Existing settings are **imported automatically** the first time you run a build with the registry: your current global connection and any per-profile overrides become named entries. The legacy settings file is left untouched, so older builds keep working.
 - Cloud entries come from the Hermes Cloud sign-in/discovery flow above, not from a hand-typed URL.

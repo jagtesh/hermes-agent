@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
+import { SegmentedControl } from '@/components/ui/segmented-control'
 import type {
   DesktopConnectionKind,
   DesktopConnectionsRegistry,
@@ -84,6 +85,7 @@ export function ConnectionsSettings() {
   const [testingId, setTestingId] = useState<null | string>(null)
   const [removeTarget, setRemoveTarget] = useState<DesktopRegistryConnection | null>(null)
   const [plainTextConfirm, setPlainTextConfirm] = useState(false)
+  const [launchModeBusy, setLaunchModeBusy] = useState(false)
   const [updatingAll, setUpdatingAll] = useState(false)
 
   const bridge = window.hermesDesktop?.connections
@@ -230,6 +232,26 @@ export function ConnectionsSettings() {
     [bridge, publishRegistry, s.saveFailed]
   )
 
+  const setLaunchMode = useCallback(
+    async (mode: 'last-used' | 'primary') => {
+      if (!bridge?.setLaunchMode) {
+        return
+      }
+
+      setLaunchModeBusy(true)
+
+      try {
+        const result = await bridge.setLaunchMode(mode)
+        publishRegistry(result.registry)
+      } catch (err) {
+        notifyError(err, s.saveFailed)
+      } finally {
+        setLaunchModeBusy(false)
+      }
+    },
+    [bridge, publishRegistry, s.saveFailed]
+  )
+
   const test = useCallback(
     async (conn: DesktopRegistryConnection) => {
       if (!bridge) {
@@ -304,6 +326,24 @@ export function ConnectionsSettings() {
       <p className="mb-4 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
         {s.stagedNote}
       </p>
+
+      {registry && registry.connections.length > 1 && (
+        <ListRow
+          action={
+            <SegmentedControl
+              disabled={launchModeBusy || !bridge?.setLaunchMode}
+              onChange={mode => void setLaunchMode(mode)}
+              options={[
+                { id: 'primary', label: s.launchPrimary },
+                { id: 'last-used', label: s.launchLastUsed }
+              ]}
+              value={registry.launchMode ?? 'primary'}
+            />
+          }
+          description={s.launchModeDesc}
+          title={s.launchModeTitle}
+        />
+      )}
 
       {!registry || registry.connections.length === 0 ? (
         <EmptyState title={s.empty} />
