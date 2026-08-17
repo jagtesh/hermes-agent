@@ -653,6 +653,7 @@ export const en: Translations = {
       stagedNote:
         'Switch sources from the Sessions sidebar. Profiles, chats, messaging, and cron stay scoped to that source; Primary is the registry default and does not switch your current workspace.',
       loadFailed: 'Could not load connections',
+      currentPill: 'Current',
       primaryPill: 'Primary',
       managedPill: 'This device',
       addConnection: 'Add connection',
@@ -704,7 +705,8 @@ export const en: Translations = {
       title: 'Gateway Connection',
       envOverride: 'env override',
       intro:
-        'Local by default. Use remote when this app should drive a Hermes backend elsewhere. Per-profile overrides below.',
+        'Choose the gateway used at launch, after recovery, and for profile overrides. Manage named sources in Connections, then switch the current workspace from Sessions.',
+      manageConnections: 'Manage connections',
       appliesTo: 'Applies to',
       allProfiles: 'All profiles',
       defaultConnection: 'Default connection for every profile that has no override of its own.',

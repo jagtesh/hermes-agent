@@ -859,6 +859,7 @@ export const zh: Translations = {
       stagedNote:
         '可在“会话”侧边栏切换来源。配置档案、聊天、消息和定时任务始终限定在所选来源；“主连接”是注册表的默认值，不会切换当前工作区。',
       loadFailed: '无法加载连接',
+      currentPill: '当前',
       primaryPill: '主连接',
       managedPill: '本机',
       addConnection: '添加连接',
@@ -909,7 +910,8 @@ export const zh: Translations = {
       title: '网关连接',
       envOverride: '环境变量覆盖',
       intro:
-        'Hermes Desktop 默认会启动自己的本地网关。当你希望此应用控制另一台机器上或可信代理后的现有 Hermes 后端时，可以使用远程网关。下面可按 profile 指定各自的远程主机。',
+        '选择启动、恢复以及 profile 覆盖时使用的网关。在“连接”中管理已命名的来源，然后从“会话”切换当前工作区。',
+      manageConnections: '管理连接',
       appliesTo: '应用于',
       allProfiles: '所有 profile',
       defaultConnection: '默认连接会用于所有没有自定义覆盖的 profile。',

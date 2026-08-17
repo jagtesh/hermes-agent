@@ -543,6 +543,7 @@ export interface Translations {
       intro: string
       stagedNote: string
       loadFailed: string
+      currentPill: string
       primaryPill: string
       managedPill: string
       addConnection: string
@@ -592,6 +593,7 @@ export interface Translations {
       title: string
       envOverride: string
       intro: string
+      manageConnections: string
       appliesTo: string
       allProfiles: string
       defaultConnection: string
