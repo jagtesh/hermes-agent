@@ -12,6 +12,7 @@ import type {
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
 import { Cloud, Globe, Loader2, Monitor, Pencil, Plus, RefreshCw, Terminal, Trash2 } from '@/lib/icons'
+import { setConnectionsRegistry } from '@/store/connections'
 import { notify, notifyError } from '@/store/notifications'
 
 import { EmptyState, ListRow, Pill, SectionHeading, SettingsContent, SettingsSkeleton } from './primitives'
@@ -67,8 +68,8 @@ function emptyEditor(kind: DesktopConnectionKind): EditorState {
 /**
  * Settings → Connections: manage the registry of named agent sources (local
  * runtime + any number of remote gateways / Hermes Cloud instances / SSH
- * hosts). Storage-level management only — the active/primary switchover UX
- * stays in Settings → Gateway until the routing generalization lands.
+ * hosts). The Sessions source switcher consumes this registry on demand;
+ * `primary` still designates the app-managed window backend.
  */
 export function ConnectionsSettings() {
   const { t } = useI18n()
@@ -85,6 +86,11 @@ export function ConnectionsSettings() {
 
   const bridge = window.hermesDesktop?.connections
 
+  const publishRegistry = useCallback((next: DesktopConnectionsRegistry) => {
+    setRegistry(next)
+    setConnectionsRegistry(next)
+  }, [])
+
   const load = useCallback(async () => {
     if (!bridge) {
       setLoading(false)
@@ -95,13 +101,13 @@ export function ConnectionsSettings() {
     setLoading(true)
 
     try {
-      setRegistry(await bridge.list())
+      publishRegistry(await bridge.list())
     } catch (err) {
       notifyError(err, s.loadFailed)
     } finally {
       setLoading(false)
     }
-  }, [bridge, s.loadFailed])
+  }, [bridge, publishRegistry, s.loadFailed])
 
   useEffect(() => {
     void load()
@@ -157,7 +163,7 @@ export function ConnectionsSettings() {
         }
 
         const result = await bridge.save(payload)
-        setRegistry(result.registry)
+        publishRegistry(result.registry)
         setEditor(null)
         setPlainTextConfirm(false)
       } catch (err) {
@@ -181,7 +187,7 @@ export function ConnectionsSettings() {
         setSaving(false)
       }
     },
-    [bridge, editor, registry?.secureTokenStorage, s.saveFailed]
+    [bridge, editor, publishRegistry, registry?.secureTokenStorage, s.saveFailed]
   )
 
   const remove = useCallback(async () => {
@@ -193,14 +199,14 @@ export function ConnectionsSettings() {
 
     try {
       const result = await bridge.remove(removeTarget.id)
-      setRegistry(result.registry)
+      publishRegistry(result.registry)
     } catch (err) {
       notifyError(err, s.removeFailed)
     } finally {
       setBusyId(null)
       setRemoveTarget(null)
     }
-  }, [bridge, removeTarget, s.removeFailed])
+  }, [bridge, publishRegistry, removeTarget, s.removeFailed])
 
   const makePrimary = useCallback(
     async (id: string) => {
@@ -212,14 +218,14 @@ export function ConnectionsSettings() {
 
       try {
         const result = await bridge.setPrimary(id)
-        setRegistry(result.registry)
+        publishRegistry(result.registry)
       } catch (err) {
         notifyError(err, s.saveFailed)
       } finally {
         setBusyId(null)
       }
     },
-    [bridge, s.saveFailed]
+    [bridge, publishRegistry, s.saveFailed]
   )
 
   const test = useCallback(
@@ -291,8 +297,8 @@ export function ConnectionsSettings() {
     <SettingsContent>
       <SectionHeading icon={Globe} title={s.title} />
       <p className="mb-1 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">{s.intro}</p>
-      {/* Storage-only slice: be explicit that routing consumption is staged so
-          "Make primary" isn't read as an immediate connection switch. */}
+      {/* Source selection lives in Sessions. Primary is the registry fallback,
+          not an immediate workspace switch. */}
       <p className="mb-4 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
         {s.stagedNote}
       </p>

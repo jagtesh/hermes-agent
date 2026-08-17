@@ -1429,6 +1429,8 @@ export interface Translations {
     allProfiles: string
     showAllProfiles: string
     switchToProfile: (name: string) => string
+    switchToConnection: (name: string) => string
+    switchConnectionFailed: (name: string) => string
     manageProfiles: string
     connectGateway: string
     actions: string
